@@ -9,7 +9,6 @@ from sqlalchemy import insert, select, update, delete
 
 from slugify import slugify
 
-
 router = APIRouter(prefix='/user', tags=['user'])
 
 
@@ -20,12 +19,15 @@ async def all_users(db: Annotated[Session, Depends(get_db)]):
 
 
 @router.get('/user_id')
-async def user_by_id():
-    pass
+async def user_by_id(user_id: int, db: Annotated[Session, Depends(get_db)]):
+    user_ = db.scalars(select(User).where(User.id == user_id))
+    if user is None:
+        raise HTTPException(status_code=404, detail="User  was not found")
+    return user_
 
 
 @router.post('/create')
-async def create_user():
+async def create_user(create_user: CreateUser, db: Annotated[Session, Depends(get_db)]):
     pass
 
 
