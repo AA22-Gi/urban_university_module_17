@@ -14,8 +14,9 @@ router = APIRouter(prefix='/user', tags=['user'])
 
 
 @router.get('/')
-async def all_users():
-    pass
+async def all_users(db: Annotated[Session, Depends(get_db)]):
+    users = db.scalars(select(User)).all()
+    return users
 
 
 @router.get('/user_id')
