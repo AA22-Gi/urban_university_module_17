@@ -20,18 +20,16 @@ async def all_users(db: Annotated[Session, Depends(get_db)]):
 
 @router.get('/user_id')
 async def user_by_id(user_id: int, db: Annotated[Session, Depends(get_db)]):
-    # Извлечение пользователя по user_id
-    found_user = db.execute(select(User).where(User.id == user_id)).fetchone()
-    # Проверка, найден ли пользователь
-    if found_user is None:
+    searched_user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if searched_user is None:
         raise HTTPException(status_code=404, detail="User  was not found")
-    return found_user
+    return searched_user
 
 
 @router.post('/create')
-async def create_user(create_new_user: CreateUser, db: Annotated[Session, Depends(get_db)]):
+async def create_user(db: Annotated[Session, Depends(get_db)], create_new_user: CreateUser):
     # Проверка на существование пользователя
-    found_user = db.execute(select(User).where(User.username == create_new_user.username)).fetchone()
+    found_user = db.scalar(select(User).where(User.username == create_new_user.username))
     if found_user is not None:
         raise HTTPException(status_code=400, detail="User  with this username already exists")
 
@@ -48,9 +46,9 @@ async def create_user(create_new_user: CreateUser, db: Annotated[Session, Depend
 
 
 @router.put('/update/{user_id}')
-async def update_user(user_id: int, updated_user: UpdateUser, db: Annotated[Session, Depends(get_db)]):
+async def update_user(db: Annotated[Session, Depends(get_db)], updated_user: UpdateUser, user_id: int):
     # Проверка на существование пользователя
-    found_user = db.execute(select(User).where(User.id == user_id)).fetchone()
+    found_user = db.scalar(select(User).where(User.id == user_id))
     if found_user is None:
         raise HTTPException(status_code=404, detail="User  not found")
 
@@ -69,7 +67,7 @@ async def update_user(user_id: int, updated_user: UpdateUser, db: Annotated[Sess
 @router.delete('/delete')
 async def delete_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
     # Проверка на существование пользователя
-    found_user = db.execute(select(User).where(User.id == user_id)).fetchone()
+    found_user = db.scalar(select(User).where(User.id == user_id))
     if found_user is None:
         raise HTTPException(status_code=404, detail="User  not found")
 
