@@ -27,15 +27,49 @@ async def task_by_id(db: Annotated[Session, Depends(get_db)], task_id: int):
 
 
 @router.post('/create')
-async def create_task():
-    pass
+async def create_task(db: Annotated[Session, Depends(get_db)], create_task_: CreateTask, user_id: int):
+    user_ = db.scalar(select(User).where(User.id == user_id))
+    if user_ is None:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User was not found')
+
+    db.execute(insert(Task).values(
+        title=create_task_.title,
+        content=create_task_.content,
+        priority=create_task_.priority,
+        completed=create_task_.completed,
+        user_id=user_id,
+        slug=slugify(create_task_.title)
+    ))
+    db.commit()
+    return {'status_code': status.HTTP_201_CREATED, 'transaction': 'Successful'}
 
 
 @router.put('/update')
-async def update_task():
-    pass
+async def update_task(db: Annotated[Session, Depends(get_db)], updated_task: UpdateTask, task_id: int):
+    found_task = db.scalar(select(User).where(Task.id == task_id))
+    if found_task is None:
+        raise HTTPException(status_code=404, detail="User  not found")
+
+    # Обновление данных пользователя
+    db.execute(update(Task).where(Task.id == task_id).values(
+        title=create_task.title,
+        content=create_task.content,
+        priority=create_task.priority,
+        completed=create_task.completed,
+        user_id=create_task.user_id,
+        slug=slugify(create_task.title)
+    ))
+    db.commit()
+    return {'status_code': status.HTTP_200_OK, 'transaction': 'User  updated successfully'}
 
 
 @router.delete('/delete')
-async def delete_task():
-    pass
+async def delete_task(db: Annotated[Session, Depends(get_db)], task_id: int):
+    found_task = db.scalar(select(Task).where(Task.id == task_id))
+    if found_task is None:
+        raise HTTPException(status_code=404, detail="User  not found")
+
+    # Удаление пользователя
+    db.execute(delete(Task).where(Task.id == task_id))
+    db.commit()
+    return {'status_code': status.HTTP_200_OK, 'transaction': 'User  deleted successfully'}
