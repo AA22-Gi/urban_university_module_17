@@ -45,9 +45,23 @@ async def create_user(create_new_user: CreateUser, db: Annotated[Session, Depend
     return {'status_code': status.HTTP_201_CREATED, 'transaction': 'Successful'}
 
 
-@router.put('/update')
-async def update_user(user_id: int, update_user: UpdateUser, db: Session = Depends(get_db)):
-    pass
+@router.put('/update/{user_id}')
+async def update_user(user_id: int, updated_user: UpdateUser , db: Annotated[Session, Depends(get_db)]):
+    # Проверка на существование пользователя
+    result = db.execute(select(User).where(User.id == user_id)).fetchone()
+    if result is None:
+        raise HTTPException(status_code=404, detail="User  not found")
+
+    # Обновление данных пользователя
+    db.execute(update(User).where(User.id == user_id).values(
+        username=updated_user.username,
+        firstname=updated_user.firstname,
+        lastname=updated_user.lastname,
+        age=updated_user.age,
+        slug=slugify(updated_user.username)
+    ))
+    db.commit()
+    return {'status_code': status.HTTP_200_OK, 'transaction': 'User  updated successfully'}
 
 
 @router.delete('/delete')
