@@ -14,13 +14,13 @@ router = APIRouter(prefix='/task', tags=['task'])
 
 @router.get('/')
 async def all_tasks(db: Annotated[Session, Depends(get_db)]):
-    tasks = db.scalars(select(User)).all()
+    tasks = db.scalars(select(Task)).all()
     return tasks
 
 
 @router.get('/task_id')
 async def task_by_id(db: Annotated[Session, Depends(get_db)], task_id: int):
-    searched_task = db.execute(select(User).where(Task.id == task_id)).scalar_one_or_none()
+    searched_task = db.execute(select(Task).where(Task.id == task_id)).scalar_one_or_none()
     if searched_task is None:
         raise HTTPException(status_code=404, detail="User  was not found")
     return searched_task
@@ -36,7 +36,6 @@ async def create_task(db: Annotated[Session, Depends(get_db)], create_task_: Cre
         title=create_task_.title,
         content=create_task_.content,
         priority=create_task_.priority,
-        completed=create_task_.completed,
         user_id=user_id,
         slug=slugify(create_task_.title)
     ))
@@ -55,7 +54,6 @@ async def update_task(db: Annotated[Session, Depends(get_db)], updated_task: Upd
         title=create_task.title,
         content=create_task.content,
         priority=create_task.priority,
-        completed=create_task.completed,
         user_id=create_task.user_id,
         slug=slugify(create_task.title)
     ))
