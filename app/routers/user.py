@@ -19,8 +19,8 @@ async def all_users(db: Annotated[Session, Depends(get_db)]):
 
 
 @router.get('/user_id')
-async def user_by_id(user_id: int, db: Annotated[Session, Depends(get_db)]):
-    searched_user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+async def user_by_id(db: Annotated[Session, Depends(get_db)], user_id: int):
+    searched_user = db.scalar(select(User).where(User.id == user_id))
     if searched_user is None:
         raise HTTPException(status_code=404, detail="User  was not found")
     return searched_user
