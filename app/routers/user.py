@@ -65,7 +65,7 @@ async def update_user(db: Annotated[Session, Depends(get_db)], updated_user: Upd
 
 
 @router.delete('/delete')
-async def delete_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
+async def delete_user(db: Annotated[Session, Depends(get_db)], user_id: int):
     # Проверка на существование пользователя
     found_user = db.scalar(select(User).where(User.id == user_id))
     if found_user is None:
@@ -75,3 +75,9 @@ async def delete_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
     db.execute(delete(User).where(User.id == user_id))
     db.commit()
     return {'status_code': status.HTTP_200_OK, 'transaction': 'User  deleted successfully'}
+
+
+@router.get('/{user_id}/tasks')
+async def tasks_by_user_id(db: Annotated[Session, Depends(get_db)], user_id: int):
+    tasks = db.scalars(select(Task).where(Task.user_id == user_id)).all()
+    return tasks
