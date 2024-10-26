@@ -70,7 +70,8 @@ async def delete_user(db: Annotated[Session, Depends(get_db)], user_id: int):
     found_user = db.scalar(select(User).where(User.id == user_id))
     if found_user is None:
         raise HTTPException(status_code=404, detail="User  not found")
-
+    # Удаление всех задач связанных с пользователем
+    db.execute(delete(Task).where(Task.user_id == user_id))
     # Удаление пользователя
     db.execute(delete(User).where(User.id == user_id))
     db.commit()
