@@ -13,13 +13,17 @@ router = APIRouter(prefix='/task', tags=['task'])
 
 
 @router.get('/')
-async def all_tasks():
-    pass
+async def all_tasks(db: Annotated[Session, Depends(get_db)]):
+    tasks = db.scalars(select(User)).all()
+    return tasks
 
 
 @router.get('/task_id')
-async def task_by_id():
-    pass
+async def task_by_id(db: Annotated[Session, Depends(get_db)], task_id: int):
+    searched_task = db.execute(select(User).where(Task.id == task_id)).scalar_one_or_none()
+    if searched_task is None:
+        raise HTTPException(status_code=404, detail="User  was not found")
+    return searched_task
 
 
 @router.post('/create')
