@@ -44,18 +44,18 @@ async def create_task(db: Annotated[Session, Depends(get_db)], create_task_: Cre
 
 
 @router.put('/update')
-async def update_task(db: Annotated[Session, Depends(get_db)], updated_task: UpdateTask, task_id: int):
-    found_task = db.scalar(select(User).where(Task.id == task_id))
+async def update_task(db: Annotated[Session, Depends(get_db)], updated_task_: UpdateTask, task_id: int):
+    found_task = db.scalar(select(Task).where(Task.id == task_id))
     if found_task is None:
         raise HTTPException(status_code=404, detail="User  not found")
 
     # Обновление данных пользователя
     db.execute(update(Task).where(Task.id == task_id).values(
-        title=create_task.title,
-        content=create_task.content,
-        priority=create_task.priority,
-        user_id=create_task.user_id,
-        slug=slugify(create_task.title)
+        title=updated_task_.title,
+        content=updated_task_.content,
+        priority=updated_task_.priority,
+        user_id=updated_task_.user_id,
+        slug=slugify(updated_task_.title)
     ))
     db.commit()
     return {'status_code': status.HTTP_200_OK, 'transaction': 'User  updated successfully'}
